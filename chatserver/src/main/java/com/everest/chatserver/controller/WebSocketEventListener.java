@@ -11,32 +11,33 @@ import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import com.everest.chatserver.model.Message;
+
 @Component
 public class WebSocketEventListener {
-	private static final Logger logger = LoggerFactory.getLogger(WebSocketEventListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketEventListener.class);
 
-	@Autowired
-	private SimpMessageSendingOperations messagingTemplate;
+    @Autowired
+    private SimpMessageSendingOperations messagingTemplate;
 
-	@EventListener
-	public void handleWebSocketConnectListener(SessionConnectedEvent event) {
-		
-		logger.info("Received a new web socket connection ");
-	}
-	   @EventListener
-	    public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
-	        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+    @EventListener
+    public void handleWebSocketConnectListener(SessionConnectedEvent event) {
+        logger.info("Received a new web socket connection ");
+    }
 
-	        String username = (String) headerAccessor.getSessionAttributes().get("username");
-	        if(username != null) {
-	            logger.info("User Disconnected : " + username);
+    @EventListener
+    public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
-	            Message chatMessage = new Message();
-	            chatMessage.setType(Message.MessageType.LEAVE);
-	            chatMessage.setSender(username);
+        String username = (String) headerAccessor.getSessionAttributes().get("username");
+        if (username != null) {
+            logger.info("User Disconnected : " + username);
 
-	            messagingTemplate.convertAndSend("/topic/public", chatMessage);
-	        }
-	    }
+            Message chatMessage = new Message();
+            chatMessage.setType(Message.MessageType.LEAVE);
+            chatMessage.setSender(username);
+
+            messagingTemplate.convertAndSend("/topic/public", chatMessage);
+        }
+    }
 
 }
